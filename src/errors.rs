@@ -1,18 +1,18 @@
 use std::fmt::{self, Display};
 use std::io::{self, Write};
 
-pub(crate) enum Error {
+pub(crate) enum ReduceError {
     UsageError(String),
     IOError(io::Error),
 }
 
-impl Display for Error {
+impl Display for ReduceError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use self::Error::*;
+        use self::ReduceError::*;
 
         match self {
-            UsageError(error) => write!(f, "{}", error),
-            IOError(error) => write!(f, "Unable to read file: {}", error),
+            UsageError(error) => write!(f, "UsageError: {}", error),
+            IOError(error) => write!(f, "IOError: {}", error),
         }
     }
 }
