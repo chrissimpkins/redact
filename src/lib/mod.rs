@@ -1,12 +1,13 @@
 use std::path::Path;
 use std::path::PathBuf;
 
-use failure::Error;
-use quote::{quote, ToTokens};
+// use failure::Error;
+// use log::{debug, info, trace, warn};
+// use quote::{quote, ToTokens};
 use structopt::StructOpt;
-use syn::File;
+// use syn::File;
 
-// mod errors;
+mod errors;
 mod inline;
 use inline::inline_crate;
 
@@ -34,7 +35,5 @@ pub(crate) fn run() -> Result<(), failure::Error> {
     let opt = Opt::from_args();
     let filepath = Path::new(&opt.inpath);
     let result: syn::File = inline_crate(filepath)?;
-    println!("{}", &result.into_token_stream().to_string());
-    // println!("{:?}", result);
     Ok(())
 }

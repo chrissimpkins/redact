@@ -1,24 +1,26 @@
 use std::fmt::{self, Display};
 use std::io::{self, Write};
 
-use failure::{bail, format_err, Fail, Error};
-use syn_inline_mod::Error as SynError;
+use failure::{bail, format_err, Error, Fail};
+use syn_inline_mod::Error as SynInlineError;
 
 #[derive(Fail, Debug)]
 pub(crate) enum ReduceError {
-    UsageError(String),
-    InlineError(SynError),
-    IOError(io::Error),
+    Usage(String),
+    Inline(SynInlineError),
+    IO(io::Error),
 }
 
 impl Display for ReduceError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use self::ReduceError::*;
-
         match self {
-            UsageError(error) => write!(f, "UsageError: {}", error),
-            InlineError(_) => write!(f, "InlineError: An error occurred during the inline attempt"),
-            IOError(error) => write!(f, "IOError: {}", error),
+            ReduceError::Usage(error) => write!(f, "Usage Error: {}", error),
+            ReduceError::Inline(error) => write!(
+                f,
+                "Inline Error: An error occurred during the inline attempt: {:?}",
+                error
+            ),
+            ReduceError::IO(error) => write!(f, "IO Error: {}", error),
         }
     }
 }
