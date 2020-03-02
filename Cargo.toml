@@ -1,0 +1,12 @@
+[package]
+name = "cargo-reduce"
+version = "0.1.0"
+authors = ["Chris Simpkins <chris@sourcefoundry.org>"]
+edition = "2018"
+
+
+[dependencies]
+syn-inline-mod = "0.3"
+syn = { version = "1.0", features = ["full", "visit-mut", "extra-traits"] }
+structopt = "0.3"
+quote = "1.0"
