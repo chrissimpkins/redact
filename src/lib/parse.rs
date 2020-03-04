@@ -1,12 +1,15 @@
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::BufReader;
 use std::path::Path;
 
-use failure::{bail, Error};
+use failure::bail;
 use log::debug;
-use quote::{quote, ToTokens};
-use syn::{parse_file, File};
+// use quote::{quote, ToTokens};
+use syn::{parse_file, File as SynFile};
 use syn_inline_mod::{Error as SynInlineError, InlinerBuilder};
 
-pub(crate) fn inline_crate_to_ast(filepath: &Path) -> Result<syn::File, failure::Error> {
+pub(crate) fn inline_crate_to_ast(filepath: &Path) -> Result<SynFile, failure::Error> {
     let inline_ast: Result<syn::File, SynInlineError> = InlinerBuilder::new()
         .error_not_found(true)
         .parse_and_inline_modules(&filepath);
