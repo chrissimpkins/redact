@@ -9,7 +9,7 @@ use structopt::StructOpt;
 
 mod errors;
 mod parse;
-use parse::inline_crate_to_ast;
+use parse::{file_to_ast, inline_crate_to_ast};
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -17,23 +17,25 @@ use parse::inline_crate_to_ast;
     about = "A Cargo plugin for Rust source code reduction."
 )]
 struct Opt {
-    /// Activate debug mode
-    // short and long flags (-d, --debug) will be deduced from the field's name
-    #[structopt(short, long)]
-    debug: bool,
+    // Inline and parse crate instead of single file
+    #[structopt(long, help = "Inline crate and reduce")]
+    inline: bool,
 
     /// Input file
-    #[structopt(parse(from_os_str))]
+    #[structopt(parse(from_os_str), help = "In file path")]
     inpath: PathBuf,
 
     /// Output file, stdout if not present
-    #[structopt(parse(from_os_str))]
-    output: Option<PathBuf>,
+    #[structopt(parse(from_os_str), help = "Out file path")]
+    outpath: Option<PathBuf>,
 }
 
 pub(crate) fn run() -> Result<(), failure::Error> {
     let opt = Opt::from_args();
     let filepath = Path::new(&opt.inpath);
-    let ast: syn::File = inline_crate_to_ast(filepath)?;
+    let ast: syn::File = match opt.inline {
+        true => inline_crate_to_ast(filepath)?,
+        false => file_to_ast(filepath)?,
+    };
     Ok(())
 }

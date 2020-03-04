@@ -31,3 +31,19 @@ pub(crate) fn inline_crate_to_ast(filepath: &Path) -> Result<SynFile, failure::E
         },
     }
 }
+
+pub(crate) fn file_to_ast(filepath: &Path) -> Result<SynFile, failure::Error> {
+    let file = File::open(filepath)?;
+    let mut buf_reader = BufReader::new(file);
+    let mut src = String::new();
+    buf_reader.read_to_string(&mut src)?;
+
+    match parse_file(&src) {
+        Ok(ast) => Ok(ast),
+        Err(error) => bail!(
+            "Unable to parse file '{}' with error: {}",
+            filepath.display(),
+            error
+        ),
+    }
+}
