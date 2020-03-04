@@ -8,8 +8,8 @@ use structopt::StructOpt;
 // use syn::File;
 
 mod errors;
-mod inline;
-use inline::inline_crate;
+mod parse;
+use parse::inline_crate_to_ast;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -34,6 +34,6 @@ struct Opt {
 pub(crate) fn run() -> Result<(), failure::Error> {
     let opt = Opt::from_args();
     let filepath = Path::new(&opt.inpath);
-    let result: syn::File = inline_crate(filepath)?;
+    let ast: syn::File = inline_crate_to_ast(filepath)?;
     Ok(())
 }
