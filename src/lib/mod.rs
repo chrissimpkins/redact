@@ -34,8 +34,8 @@ pub(crate) fn run() -> Result<(), failure::Error> {
     let opt = Opt::from_args();
     let filepath = Path::new(&opt.inpath);
     let ast: syn::File = match opt.inline {
-        true => inline_crate_to_ast(filepath)?,
         false => file_to_ast(filepath)?,
+        true => inline_crate_to_ast(filepath)?,
     };
     Ok(())
 }
