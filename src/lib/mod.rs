@@ -8,7 +8,9 @@ use structopt::StructOpt;
 // use syn::File;
 
 mod errors;
+mod io;
 mod parse;
+use io::write_file;
 use parse::{file_to_ast, inline_crate_to_ast};
 
 #[derive(Debug, StructOpt)]
@@ -37,5 +39,11 @@ pub(crate) fn run() -> Result<(), failure::Error> {
         false => file_to_ast(filepath)?,
         true => inline_crate_to_ast(filepath)?,
     };
-    Ok(())
+    match &opt.outpath {
+        Some(filepath) => write_file(&format!("{:?}", ast), &filepath),
+        None => {
+            println!("{:?}", ast);
+            Ok(())
+        }
+    }
 }
