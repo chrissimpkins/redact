@@ -5,13 +5,16 @@ use std::path::PathBuf;
 // use log::{debug, info, trace, warn};
 // use quote::{quote, ToTokens};
 use structopt::StructOpt;
+use syn::visit_mut::{self, VisitMut};
 // use syn::File;
 
 mod errors;
 mod io;
 mod parse;
+mod transforms;
 use io::write_file;
 use parse::{file_to_ast, inline_crate_to_ast};
+use transforms::comments::CommentRemove;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -35,15 +38,19 @@ struct Opt {
 pub(crate) fn run() -> Result<(), failure::Error> {
     let opt = Opt::from_args();
     let filepath = Path::new(&opt.inpath);
-    let ast: syn::File = match opt.inline {
+    let mut ast: syn::File = match opt.inline {
         false => file_to_ast(filepath)?,
         true => inline_crate_to_ast(filepath)?,
     };
-    match &opt.outpath {
-        Some(filepath) => write_file(&format!("{:?}", ast), &filepath),
-        None => {
-            println!("{:?}", ast);
-            Ok(())
-        }
-    }
+
+    CommentRemove.visit_file_mut(&mut ast);
+    Ok(())
+
+    // match &opt.outpath {
+    //     Some(filepath) => write_file(&format!("{:?}", ast), &filepath),
+    //     None => {
+    //         println!("{:?}", ast);
+    //         Ok(())
+    //     }
+    // }
 }
