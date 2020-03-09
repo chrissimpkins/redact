@@ -12,9 +12,9 @@ mod errors;
 mod io;
 mod parse;
 mod transforms;
-use io::write_file;
+use io::{stdout_ast_to_rust, write_file, write_ast_to_rust};
 use parse::{file_to_ast, inline_crate_to_ast};
-use transforms::comments::CommentRemove;
+use transforms::comments::Comments;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -22,10 +22,6 @@ use transforms::comments::CommentRemove;
     about = "A Cargo plugin for Rust source code reduction."
 )]
 struct Opt {
-    // Inline and parse crate instead of single file
-    #[structopt(long, help = "Inline crate and reduce")]
-    inline: bool,
-
     /// Input file
     #[structopt(parse(from_os_str), help = "In file path")]
     inpath: PathBuf,
@@ -37,20 +33,27 @@ struct Opt {
 
 pub(crate) fn run() -> Result<(), failure::Error> {
     let opt = Opt::from_args();
-    let filepath = Path::new(&opt.inpath);
-    let mut ast: syn::File = match opt.inline {
-        false => file_to_ast(filepath)?,
-        true => inline_crate_to_ast(filepath)?,
+    // let filepath = Path::new(&opt.inpath);
+    let mut ast: syn::File = inline_crate_to_ast(&opt.inpath)?;
+    Comments.visit_file_mut(&mut ast);
+    // TODO: dump inlined ast to Rust source file and format
+    match opt.outpath {
+        Some(filepath) => write_ast_to_rust(ast, &filepath)?,
+        None => stdout_ast_to_rust(ast)?,
     };
+    // Comments.remove()  TODO: add comments remove stage after add file formatting source
+    
 
-    CommentRemove.visit_file_mut(&mut ast);
+    // TODO: read inlined source file to mutable string
+
+    // TODO: pre-ast parsing transforms + testing
+
+    // TODO: parse to AST
+
+    // TODO: AST transforms + testing
+
+    // TODO: dump final reduced file
+
     Ok(())
 
-    // match &opt.outpath {
-    //     Some(filepath) => write_file(&format!("{:?}", ast), &filepath),
-    //     None => {
-    //         println!("{:?}", ast);
-    //         Ok(())
-    //     }
-    // }
 }
