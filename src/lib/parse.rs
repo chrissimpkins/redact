@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use failure::bail;
 use log::debug;
@@ -9,12 +9,12 @@ use log::debug;
 use syn::{parse_file, File as SynFile};
 use syn_inline_mod::{Error as SynInlineError, InlinerBuilder};
 
-pub(crate) fn inline_crate_to_ast(filepath: &Path) -> Result<SynFile, failure::Error> {
+pub(crate) fn inline_crate_to_ast(filepath: &PathBuf) -> Result<SynFile, failure::Error> {
     let inline_ast: Result<syn::File, SynInlineError> = InlinerBuilder::new()
         .error_not_found(true)
         .parse_and_inline_modules(&filepath);
     debug!("{:?}", inline_ast);
-    // debug!("{}", &inline_text.unwrap().into_token_stream().to_string());
+    // debug!("{}", &inline_ast.unwrap().into_token_stream().to_string());
 
     match inline_ast {
         Ok(ast) => Ok(ast),
@@ -32,7 +32,7 @@ pub(crate) fn inline_crate_to_ast(filepath: &Path) -> Result<SynFile, failure::E
     }
 }
 
-pub(crate) fn file_to_ast(filepath: &Path) -> Result<SynFile, failure::Error> {
+pub(crate) fn file_to_ast(filepath: &PathBuf) -> Result<SynFile, failure::Error> {
     let file = File::open(filepath)?;
     let mut buf_reader = BufReader::new(file);
     let mut src = String::new();
