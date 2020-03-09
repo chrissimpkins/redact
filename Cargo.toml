@@ -7,8 +7,9 @@ edition = "2018"
 
 [dependencies]
 env_logger = "0.7.1"
-failure = "0.1.6"
+failure = "0.1.7"
 log = "0.4.8"
+proc-macro2 = "1.0.9"
 syn-inline-mod = "0.3"
 syn = { version = "1.0", features = ["full", "visit-mut", "extra-traits", "parsing"] }
 structopt = "0.3"
