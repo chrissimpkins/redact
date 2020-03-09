@@ -1,5 +1,5 @@
 [package]
-name = "cargo-reduce"
+name = "redact"
 version = "0.1.0"
 authors = ["Chris Simpkins <chris@sourcefoundry.org>"]
 edition = "2018"

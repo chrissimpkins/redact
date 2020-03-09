@@ -18,29 +18,36 @@ use transforms::comments::Comments;
 
 #[derive(Debug, StructOpt)]
 #[structopt(
-    name = "cargo-reduce",
-    about = "A Cargo plugin for Rust source code reduction."
+    name = "redact",
+    about = "A tool for Rust source code reduction."
 )]
 struct Opt {
+    /// Output file, stdout if not present
+    #[structopt(short = "o", long = "outpath", parse(from_os_str), help = "Out file path")]
+    outpath: Option<PathBuf>,
+
     /// Input file
     #[structopt(parse(from_os_str), help = "In file path")]
     inpath: PathBuf,
 
-    /// Output file, stdout if not present
-    #[structopt(parse(from_os_str), help = "Out file path")]
-    outpath: Option<PathBuf>,
 }
 
 pub(crate) fn run() -> Result<(), failure::Error> {
     let opt = Opt::from_args();
+    println!("{:?} ; {:?}", opt.inpath, opt.outpath);
+    std::process::exit(0);
+
     // let filepath = Path::new(&opt.inpath);
     let mut ast: syn::File = inline_crate_to_ast(&opt.inpath)?;
     Comments.visit_file_mut(&mut ast);
     // TODO: dump inlined ast to Rust source file and format
-    match opt.outpath {
-        Some(filepath) => write_ast_to_rust(ast, &filepath)?,
-        None => stdout_ast_to_rust(ast)?,
-    };
+    
+    // if opt.outpath {
+    //     write_ast_to_rust(ast, &filepath)?;
+    // else {
+    //     stdout_ast_to_rust(ast)?;
+    // }
+
     // Comments.remove()  TODO: add comments remove stage after add file formatting source
     
 
