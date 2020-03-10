@@ -7,7 +7,6 @@ use syn::{parse_quote, Attribute, Expr, File, Lit, LitInt};
 pub(crate) struct Comments;
 
 impl Comments {
-
     // TODO: after parse to ast followed by dump to Rust source, all comments have the following formats:
     // (1)   #![doc]
     // (2)   #[doc]
@@ -15,9 +14,10 @@ impl Comments {
         // replace the instances of `#[doc]`
         let source_transform_1 = source.replace("#[doc}\n", "").replace("#[doc]", "");
         // replace the instances of `#![doc]`
-        source_transform_1.replace("#![doc}\n", "").replace("#![doc]", "")
+        source_transform_1
+            .replace("#![doc}\n", "")
+            .replace("#![doc]", "")
     }
-
 }
 
 impl VisitMut for Comments {
@@ -31,7 +31,7 @@ impl VisitMut for Comments {
             // one of these two formats after this transformation:
             // (1)  #[doc]
             // (2)  #![doc]
-            node.tokens = TokenStream::new();  // create empty TokenStream
+            node.tokens = TokenStream::new(); // create empty TokenStream
         }
         visit_mut::visit_attribute_mut(self, node);
     }
