@@ -1,12 +1,21 @@
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::{PathBuf, Path};
+use std::io::BufReader;
+use std::path::{Path, PathBuf};
 
 use failure::Error;
 use quote::ToTokens;
 // use syn::File;
 // use tempfile::tempdir;
 use tempfile::tempfile;
+
+pub(crate) fn read_file(filepath: &PathBuf) -> Result<String, Error> {
+    let f = File::open(filepath)?;
+    let mut reader = BufReader::new(f);
+    let mut text = String::new();
+    reader.read_line(&mut text)?;
+    Ok(text)
+}
 
 pub(crate) fn write_tempfile(src: &str) -> Result<File, Error> {
     let mut f = tempfile()?;
