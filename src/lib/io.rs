@@ -9,8 +9,15 @@ use quote::ToTokens;
 // use tempfile::tempdir;
 use tempfile::tempfile;
 
-pub(crate) fn read_file(filepath: &PathBuf) -> Result<String, Error> {
+pub(crate) fn read_filepath(filepath: &PathBuf) -> Result<String, Error> {
     let f = File::open(filepath)?;
+    let mut reader = BufReader::new(f);
+    let mut text = String::new();
+    reader.read_line(&mut text)?;
+    Ok(text)
+}
+
+pub(crate) fn read_file(f: File) -> Result<String, Error> {
     let mut reader = BufReader::new(f);
     let mut text = String::new();
     reader.read_line(&mut text)?;
@@ -24,15 +31,23 @@ pub(crate) fn write_tempfile(src: &str) -> Result<File, Error> {
     Ok(f)
 }
 
-pub(crate) fn write_file(src: &str, filepath: &PathBuf) -> Result<(), Error> {
+pub(crate) fn write_filepath(src: &str, filepath: &PathBuf) -> Result<(), Error> {
     let mut f = File::create(filepath)?;
     f.write_all(src.as_bytes())?;
+    f.sync_data()?;
     Ok(())
 }
 
 pub(crate) fn write_ast_to_rust(ast: syn::File, filepath: &PathBuf) -> Result<(), Error> {
-    write_file(&ast.into_token_stream().to_string(), filepath)?;
+    write_filepath(&ast.into_token_stream().to_string(), filepath)?;
     Ok(())
+}
+
+pub(crate) fn write_tempfile_ast_to_rust(ast: syn::File) -> Result<File, Error> {
+    let mut f = tempfile()?;
+    f.write_all(&ast.into_token_stream().to_string().as_bytes())?;
+    f.sync_data()?;
+    Ok(f)
 }
 
 pub(crate) fn stdout_ast_to_rust(ast: syn::File) -> Result<(), Error> {
