@@ -21,6 +21,10 @@ use transforms::comments::Comments;
 #[derive(Debug, StructOpt)]
 #[structopt(name = "redact", about = "A tool for Rust source code reduction.")]
 struct Opt {
+    
+    #[structopt(long="ast", help = "Dump abstract syntax tree")]
+    ast: bool,
+
     /// Output file, stdout if not present
     #[structopt(
         short = "o",
@@ -39,6 +43,11 @@ pub(crate) fn run() -> Result<(), Error> {
     let opt = Opt::from_args();
 
     let mut ast: syn::File = inline_crate_to_ast(&opt.inpath)?;
+    if opt.ast {
+        print!("{:#?}", ast);
+        std::io::stdout().flush()?;
+        return Ok(());
+    }
     Comments.visit_file_mut(&mut ast);
     let pre_source = ast.into_token_stream().to_string();
     let comments_removed_text = Comments::remove(&pre_source);
