@@ -12,11 +12,8 @@ impl Comments {
     // (2)   #[doc]
     pub(crate) fn remove(source: &str) -> String {
         // replace the instances of `#[doc]`
-        let source_transform_1 = source.replace("#[doc}\n", "").replace("#[doc]", "");
         // replace the instances of `#![doc]`
-        source_transform_1
-            .replace("#![doc}\n", "")
-            .replace("#![doc]", "")
+        source.replace("# [ doc ]", "").replace("# ! [ doc ] ", "")
     }
 }
 
