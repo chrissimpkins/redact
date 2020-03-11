@@ -7,7 +7,7 @@ use syn::{parse_quote, Attribute, Expr, File, Lit, LitInt};
 pub(crate) struct Comments;
 
 impl Comments {
-    // TODO: after parse to ast followed by dump to Rust source, all comments have the following formats:
+    // after parse to ast followed by dump to Rust source, all comments have the following formats:
     // (1)   #![doc]
     // (2)   #[doc]
     pub(crate) fn remove(source: &str) -> String {
