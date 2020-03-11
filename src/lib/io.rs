@@ -52,5 +52,6 @@ pub(crate) fn write_tempfile_ast_to_rust(ast: syn::File) -> Result<File, Error> 
 
 pub(crate) fn stdout_ast_to_rust(ast: syn::File) -> Result<(), Error> {
     print!("{}", &ast.into_token_stream().to_string());
+    std::io::stdout().flush()?;
     Ok(())
 }
