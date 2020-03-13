@@ -2,7 +2,7 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 
-use failure::Error;
+use failure::{bail, Error};
 // use log::{debug, info, trace, warn};
 use quote::{quote, ToTokens};
 use structopt::StructOpt;
@@ -47,6 +47,11 @@ struct Opt {
 
 pub(crate) fn run() -> Result<(), Error> {
     let opt = Opt::from_args();
+
+    // Command line file path argument validation
+    if !&opt.inpath.as_path().exists() {
+        bail!("the file path {:?} does not appear to exist.", opt.inpath);
+    }
 
     let mut ast: syn::File = inline_crate_to_ast(&opt.inpath)?;
     // dump AST to stdout
