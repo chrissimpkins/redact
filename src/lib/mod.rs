@@ -16,11 +16,13 @@ mod io;
 mod parse;
 mod toolchains;
 mod transforms;
+use fmt::rustformat;
 use io::{
     read_filepath, stdout_ast_to_rust, write_ast_to_rust, write_filepath,
     write_tempfile_ast_to_rust,
 };
 use parse::{file_to_ast, inline_crate_to_ast};
+use toolchains::Toolchain;
 use transforms::comments::Comments;
 
 #[derive(Debug, StructOpt)]
@@ -59,10 +61,12 @@ pub(crate) fn run() -> Result<(), Error> {
     let pre_source = ast.into_token_stream().to_string();
     let comments_removed_text = Comments::remove(&pre_source);
 
-    match opt.outpath {
-        Some(filepath) => write_filepath(&comments_removed_text, &filepath)?,
-        None => print!("{}", comments_removed_text),
-    }
+    let filepath = opt.outpath.unwrap();
+    
+    write_filepath(&comments_removed_text, &filepath)?;
+
+
+
 
     // TODO: read inlined source file to mutable string
 
@@ -72,7 +76,9 @@ pub(crate) fn run() -> Result<(), Error> {
 
     // TODO: AST transforms + testing
 
-    // TODO: dump final reduced file
-
-    Ok(())
+    // dump final reduced file with rustfmt formatting
+    match rustformat(Toolchain::Stable, &filepath) {
+        Ok(_) => return Ok(()),
+        Err(error) => return Err(error.into())
+    }
 }
