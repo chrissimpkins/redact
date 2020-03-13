@@ -8,21 +8,25 @@ use quote::{quote, ToTokens};
 use structopt::StructOpt;
 use syn::visit_mut::{self, VisitMut};
 // use syn::File;
-use tempfile::{tempfile, tempdir};
+use tempfile::{tempdir, tempfile};
 
 mod errors;
+mod fmt;
 mod io;
 mod parse;
+mod toolchains;
 mod transforms;
-use io::{read_filepath, stdout_ast_to_rust, write_ast_to_rust, write_filepath, write_tempfile_ast_to_rust};
+use io::{
+    read_filepath, stdout_ast_to_rust, write_ast_to_rust, write_filepath,
+    write_tempfile_ast_to_rust,
+};
 use parse::{file_to_ast, inline_crate_to_ast};
 use transforms::comments::Comments;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "redact", about = "A tool for Rust source code reduction.")]
 struct Opt {
-    
-    #[structopt(long="ast", help = "Dump abstract syntax tree")]
+    #[structopt(long = "ast", help = "Dump abstract syntax tree")]
     ast: bool,
 
     /// Output file, stdout if not present
@@ -43,21 +47,22 @@ pub(crate) fn run() -> Result<(), Error> {
     let opt = Opt::from_args();
 
     let mut ast: syn::File = inline_crate_to_ast(&opt.inpath)?;
+    // dump AST to stdout
     if opt.ast {
         print!("{:#?}", ast);
         std::io::stdout().flush()?;
         return Ok(());
     }
+
+    // begin transforms
     Comments.visit_file_mut(&mut ast);
     let pre_source = ast.into_token_stream().to_string();
     let comments_removed_text = Comments::remove(&pre_source);
-    
+
     match opt.outpath {
         Some(filepath) => write_filepath(&comments_removed_text, &filepath)?,
         None => print!("{}", comments_removed_text),
     }
-    
-    // Comments.remove()  TODO: add comments remove stage after add file formatting source
 
     // TODO: read inlined source file to mutable string
 
