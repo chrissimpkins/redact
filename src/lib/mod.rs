@@ -1,5 +1,4 @@
 use std::io::Write;
-use std::path::Path;
 use std::path::PathBuf;
 
 use failure::{bail, Error};
@@ -69,8 +68,6 @@ pub(crate) fn run() -> Result<(), Error> {
     let filepath = opt.outpath.unwrap();
 
     write_filepath(&comments_removed_text, &filepath)?;
-
-    // TODO: parse to AST
 
     // TODO: AST transforms + testing
 

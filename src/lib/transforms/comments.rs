@@ -11,7 +11,7 @@ impl Comments {
     // (1)   #![doc]
     // (2)   #[doc]
     pub(crate) fn remove(source: &str) -> String {
-        // replace the instances of `#[doc]`
+        // replace the ast instances of `#[doc]`
         // replace the instances of `#![doc]`
         source.replace("# [ doc ]", "").replace("# ! [ doc ] ", "")
     }
