@@ -5,7 +5,7 @@ use failure::{bail, format_err, Error, Fail};
 
 use crate::lib::toolchains::Toolchain;
 
-pub(crate) fn format(toolchain: Toolchain, filepath: PathBuf) -> Result<(), Error> {
+pub(crate) fn rustformat(toolchain: Toolchain, filepath: &PathBuf) -> Result<(), Error> {
     verify_rustfmt(toolchain)?;
 
     let toolchain_str = &format!("{}", toolchain);
@@ -36,7 +36,7 @@ pub(crate) fn format(toolchain: Toolchain, filepath: PathBuf) -> Result<(), Erro
     }
 }
 
-pub(crate) fn check_format(toolchain: Toolchain, filepath: PathBuf) -> Result<(), Error> {
+pub(crate) fn check_rustformat(toolchain: Toolchain, filepath: &PathBuf) -> Result<(), Error> {
     verify_rustfmt(toolchain)?;
 
     let toolchain_str = &format!("{}", toolchain);
@@ -68,7 +68,7 @@ pub(crate) fn check_format(toolchain: Toolchain, filepath: PathBuf) -> Result<()
     }
 }
 
-pub(crate) fn verify_rustfmt(toolchain: Toolchain) -> Result<(), Error> {
+fn verify_rustfmt(toolchain: Toolchain) -> Result<(), Error> {
     let toolchain_str = &format!("{}", toolchain);
 
     // check rustfmt --version to confirm installation in toolchain
