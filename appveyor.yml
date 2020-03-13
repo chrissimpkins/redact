@@ -44,3 +44,6 @@ test_script:
       cargo test --target %TARGET% --release &&
       cargo run --target %TARGET% &&
       cargo run --target %TARGET% --release
+
+# Building is done in the test phase, so we disable Appveyor's build phase.
+build: false
