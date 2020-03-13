@@ -65,10 +65,6 @@ pub(crate) fn run() -> Result<(), Error> {
 
     write_filepath(&comments_removed_text, &filepath)?;
 
-    // TODO: read inlined source file to mutable string
-
-    // TODO: pre-ast parsing transforms + testing
-
     // TODO: parse to AST
 
     // TODO: AST transforms + testing
