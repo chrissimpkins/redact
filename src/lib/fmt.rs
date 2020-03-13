@@ -15,21 +15,21 @@ pub(crate) fn rustformat(toolchain: Toolchain, filepath: &PathBuf) -> Result<(),
             toolchain_str,
             "--",
             "rustfmt",
-            "fmt",
             &filepath.to_string_lossy(),
         ])
         .stderr(Stdio::null())
         .stdout(Stdio::null())
-        .status()
+        .output()
     {
-        Ok(exitstatus) => {
-            if exitstatus.success() {
+        Ok(output) => {
+            // rustfmt returns 1 if changed file
+            if output.status.success() {
                 return Ok(());
             }
             bail!(
-                "rustfmt +{} failed with exit status code {}",
+                "rustfmt +{} failed with error: {:?}",
                 toolchain_str,
-                exitstatus
+                output.stdout
             )
         }
         Err(error) => Err(error.into()),
@@ -46,7 +46,6 @@ pub(crate) fn check_rustformat(toolchain: Toolchain, filepath: &PathBuf) -> Resu
             toolchain_str,
             "--",
             "rustfmt",
-            "fmt",
             "--check",
             &filepath.to_string_lossy(),
         ])
