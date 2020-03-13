@@ -62,11 +62,8 @@ pub(crate) fn run() -> Result<(), Error> {
     let comments_removed_text = Comments::remove(&pre_source);
 
     let filepath = opt.outpath.unwrap();
-    
+
     write_filepath(&comments_removed_text, &filepath)?;
-
-
-
 
     // TODO: read inlined source file to mutable string
 
@@ -77,8 +74,8 @@ pub(crate) fn run() -> Result<(), Error> {
     // TODO: AST transforms + testing
 
     // dump final reduced file with rustfmt formatting
-    match rustformat(Toolchain::Stable, &filepath) {
+    match rustformat(Toolchain::Nightly, &filepath) {
         Ok(_) => return Ok(()),
-        Err(error) => return Err(error.into())
+        Err(error) => return Err(error.into()),
     }
 }
