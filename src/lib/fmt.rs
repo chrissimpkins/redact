@@ -36,37 +36,6 @@ pub(crate) fn rustformat(toolchain: Toolchain, filepath: &PathBuf) -> Result<(),
     }
 }
 
-pub(crate) fn check_rustformat(toolchain: Toolchain, filepath: &PathBuf) -> Result<(), Error> {
-    verify_rustfmt(toolchain)?;
-
-    let toolchain_str = &format!("{}", toolchain);
-    match Command::new("rustup")
-        .args(&[
-            "run",
-            toolchain_str,
-            "--",
-            "rustfmt",
-            "--check",
-            &filepath.to_string_lossy(),
-        ])
-        .stderr(Stdio::null())
-        .stdout(Stdio::null())
-        .status()
-    {
-        Ok(exitstatus) => {
-            if exitstatus.success() {
-                return Ok(());
-            }
-            bail!(
-                "rustfmt +{} failed with exit status code {}",
-                toolchain_str,
-                exitstatus
-            )
-        }
-        Err(error) => Err(error.into()),
-    }
-}
-
 fn verify_rustfmt(toolchain: Toolchain) -> Result<(), Error> {
     let toolchain_str = &format!("{}", toolchain);
 
