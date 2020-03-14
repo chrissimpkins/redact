@@ -26,9 +26,13 @@ use transforms::comments::Comments;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "redact", about = "A tool for Rust source code reduction.")]
-struct Opt {
+pub(crate) struct Opt {
     #[structopt(long = "ast", help = "Dump abstract syntax tree")]
     ast: bool,
+
+    /// Output file, stdout if not present
+    #[structopt(short = "f", long = "fmt", help = "Format output")]
+    format: bool,
 
     /// Output file, stdout if not present
     #[structopt(
@@ -42,38 +46,110 @@ struct Opt {
     /// Input file
     #[structopt(parse(from_os_str), help = "In file path")]
     inpath: PathBuf,
+
+    /// Rust toolchain for testing and source formatting
+    #[structopt(
+        short = "t",
+        long = "toolchain",
+        help = "Rust toolchain (stable, beta, nightly)"
+    )]
+    toolchain: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct Config {
+    pub inpath: PathBuf,
+    pub outpath: PathBuf,
+    pub toolchain: Toolchain,
+    pub is_ast_request: bool,
+    pub is_format_request: bool,
+}
+
+impl Config {
+    pub(crate) fn new(opt: Opt) -> Self {
+        let tc = match opt.toolchain {
+            Some(t) => match t.as_ref() {
+                "stable" => Toolchain::Stable,
+                "beta" => Toolchain::Beta,
+                "nightly" => Toolchain::Nightly,
+                _ => Toolchain::Stable,
+            },
+            None => Toolchain::Stable,
+        };
+
+        let opath = match opt.outpath {
+            Some(fp) => fp,
+            None => PathBuf::from("./reduced_.rs"), // default outpath
+        };
+
+        Self {
+            inpath: opt.inpath,
+            outpath: opath,
+            is_ast_request: opt.ast,
+            is_format_request: opt.format,
+            toolchain: tc,
+        }
+    }
 }
 
 pub(crate) fn run() -> Result<(), Error> {
     let opt = Opt::from_args();
 
-    // Command line file path argument validation
-    if !&opt.inpath.as_path().exists() {
+    // ======================
+    // Early bail validations
+    // ======================
+
+    // Validate inpath exists
+    if !&opt.inpath.as_path().is_file() {
         bail!("the file path {:?} does not appear to exist.", opt.inpath);
     }
+    // Validate toolchain
+    if opt.toolchain.is_some() {
+        let tc = &opt.toolchain.clone().unwrap();
+        if !(tc == "stable" || tc == "beta" || tc == "nightly") {
+            bail!(
+                "the toolchain must be defined as 'stable', 'beta', or 'nightly'. Received '{}'.",
+                tc
+            )
+        }
+    }
 
-    let mut ast: syn::File = inline_crate_to_ast(&opt.inpath)?;
-    // dump AST to stdout
-    if opt.ast {
-        print!("{:#?}", ast);
+    // ======================
+    // Parse configuration
+    // ======================
+    let config = Config::new(opt);
+
+    // ======================
+    // Begin transforms
+    // ======================
+    // inline source files
+    let mut ast: syn::File = inline_crate_to_ast(&config.inpath)?;
+
+    // dump AST to stdout (optional)
+    if config.is_ast_request {
+        if config.is_format_request {
+            print!("{:#?}", ast);
+        } else {
+            print!("{:?}", ast);
+        }
         std::io::stdout().flush()?;
         return Ok(());
     }
 
-    // begin transforms
     Comments.visit_file_mut(&mut ast);
     let pre_source = ast.into_token_stream().to_string();
     let comments_removed_text = Comments::remove(&pre_source);
 
-    let filepath = opt.outpath.unwrap();
+    write_filepath(&comments_removed_text, &config.outpath)?;
 
-    write_filepath(&comments_removed_text, &filepath)?;
+    // TODO: add AST transforms + testing
 
-    // TODO: AST transforms + testing
-
-    // dump final reduced file with rustfmt formatting
-    match rustformat(Toolchain::Nightly, &filepath) {
-        Ok(_) => return Ok(()),
-        Err(error) => return Err(error.into()),
+    // run of rustfmt on the final source file (optional)
+    if config.is_format_request {
+        match rustformat(config.toolchain, &config.outpath) {
+            Ok(_) => return Ok(()),
+            Err(error) => return Err(error.into()),
+        }
     }
+    Ok(())
 }
