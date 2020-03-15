@@ -31,6 +31,13 @@ pub(crate) fn write_tempfile(src: &str) -> Result<File, Error> {
     Ok(f)
 }
 
+pub(crate) fn write_tempfile_get_filesize(src: &str) -> Result<u64, Error> {
+    let mut f = tempfile()?;
+    f.write_all(src.as_bytes())?;
+    f.sync_data()?;
+    Ok(f.metadata()?.len())
+}
+
 pub(crate) fn write_filepath(src: &str, filepath: &PathBuf) -> Result<(), Error> {
     let mut f = File::create(filepath)?;
     f.write_all(src.as_bytes())?;

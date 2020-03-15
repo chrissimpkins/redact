@@ -7,20 +7,18 @@ use quote::{quote, ToTokens};
 use structopt::StructOpt;
 use syn::visit_mut::{self, VisitMut};
 // use syn::File;
-use tempfile::{tempdir, tempfile};
 
 mod errors;
 mod fmt;
 mod io;
 mod parse;
+mod testrunner;
 mod toolchains;
 mod transforms;
+
 use fmt::rustformat;
-use io::{
-    read_filepath, stdout_ast_to_rust, write_ast_to_rust, write_filepath,
-    write_tempfile_ast_to_rust,
-};
-use parse::{file_to_ast, inline_crate_to_ast};
+use io::write_filepath;
+use parse::inline_crate_to_ast;
 use toolchains::Toolchain;
 use transforms::comments::Comments;
 
@@ -79,7 +77,7 @@ impl Config {
 
         let opath = match opt.outpath {
             Some(fp) => fp,
-            None => PathBuf::from("./reduced_.rs"), // default outpath
+            None => PathBuf::from("./_reduced.rs"), // default outpath
         };
 
         Self {
@@ -120,7 +118,7 @@ pub(crate) fn run() -> Result<(), Error> {
     let config = Config::new(opt);
 
     // ======================
-    // Begin transforms
+    // Parse AST
     // ======================
     // inline source files
     let mut ast: syn::File = inline_crate_to_ast(&config.inpath)?;
@@ -135,6 +133,10 @@ pub(crate) fn run() -> Result<(), Error> {
         std::io::stdout().flush()?;
         return Ok(());
     }
+
+    // ======================
+    // Begin transforms
+    // ======================
 
     Comments.visit_file_mut(&mut ast);
     let pre_source = ast.into_token_stream().to_string();
