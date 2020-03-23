@@ -140,7 +140,7 @@ pub(crate) fn run() -> Result<(), Error> {
 
     Comments.visit_file_mut(&mut ast);
     let pre_source = ast.into_token_stream().to_string();
-    let comments_removed_text = Comments::remove(&pre_source);
+    let comments_removed_text = Comments::mutate(&pre_source);
 
     write_filepath(&comments_removed_text, &config.outpath)?;
 
