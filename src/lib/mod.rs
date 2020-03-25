@@ -12,6 +12,7 @@ mod errors;
 mod fmt;
 mod io;
 mod parse;
+mod representations;
 mod testrunner;
 mod toolchains;
 mod transforms;
@@ -19,6 +20,7 @@ mod transforms;
 use fmt::rustformat;
 use io::write_filepath;
 use parse::inline_crate_to_ast;
+use representations::AST;
 use toolchains::Toolchain;
 use transforms::comments::Comments;
 
@@ -121,14 +123,15 @@ pub(crate) fn run() -> Result<(), Error> {
     // Parse AST
     // ======================
     // inline source files
-    let mut ast: syn::File = inline_crate_to_ast(&config.inpath)?;
+    // let mut ast: syn::File = inline_crate_to_ast(&config.inpath)?;
+    let mut ast = AST::new_from_crate(&config.inpath)?;
 
     // dump AST to stdout (optional)
     if config.is_ast_request {
         if config.is_format_request {
-            print!("{:#?}", ast);
+            print!("{:#?}", ast.src);
         } else {
-            print!("{:?}", ast);
+            print!("{:?}", ast.src);
         }
         std::io::stdout().flush()?;
         return Ok(());
@@ -138,8 +141,8 @@ pub(crate) fn run() -> Result<(), Error> {
     // Begin transforms
     // ======================
 
-    Comments.visit_file_mut(&mut ast);
-    let pre_source = ast.into_token_stream().to_string();
+    Comments.visit_file_mut(&mut ast.src);
+    let pre_source = ast.src.into_token_stream().to_string();
     let comments_removed_text = Comments::mutate(&pre_source);
 
     write_filepath(&comments_removed_text, &config.outpath)?;
