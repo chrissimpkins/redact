@@ -112,6 +112,14 @@ mod tests {
         String::from(retstr2)
     }
 
+    fn get_astobj_string() -> String {
+        String::from("AST { src: File { shebang: None, attrs: [], items: [Use(ItemUse { attrs: [], vis: Inherited, use_token: Use, leading_colon: None, tree: Path(UsePath { ident: Ident(std), colon2_token: Colon2, tree: Path(UsePath { ident: Ident(path), colon2_token: Colon2, tree: Name(UseName { ident: Ident(PathBuf) }) }) }), semi_token: Semi }), Fn(ItemFn { attrs: [], vis: Public(VisPublic { pub_token: Pub }), sig: Signature { constness: None, asyncness: None, unsafety: None, abi: None, fn_token: Fn, ident: Ident(tester), generics: Generics { lt_token: None, params: [], gt_token: None, where_clause: None }, paren_token: Paren, inputs: [], variadic: None, output: Default }, block: Block { brace_token: Brace, stmts: [Semi(Macro(ExprMacro { attrs: [], mac: Macro { path: Path { leading_colon: None, segments: [PathSegment { ident: Ident(println), arguments: None }] }, bang_token: Bang, delimiter: Paren(Paren), tokens: TokenStream [Literal { lit: \"Hello world!\" }] } }), Semi)] } })] } }")
+    }
+
+    fn get_syn_string() -> String {
+        String::from("File { shebang: None, attrs: [], items: [Use(ItemUse { attrs: [], vis: Inherited, use_token: Use, leading_colon: None, tree: Path(UsePath { ident: Ident(std), colon2_token: Colon2, tree: Path(UsePath { ident: Ident(path), colon2_token: Colon2, tree: Name(UseName { ident: Ident(PathBuf) }) }) }), semi_token: Semi }), Fn(ItemFn { attrs: [], vis: Public(VisPublic { pub_token: Pub }), sig: Signature { constness: None, asyncness: None, unsafety: None, abi: None, fn_token: Fn, ident: Ident(tester), generics: Generics { lt_token: None, params: [], gt_token: None, where_clause: None }, paren_token: Paren, inputs: [], variadic: None, output: Default }, block: Block { brace_token: Brace, stmts: [Semi(Macro(ExprMacro { attrs: [], mac: Macro { path: Path { leading_colon: None, segments: [PathSegment { ident: Ident(println), arguments: None }] }, bang_token: Bang, delimiter: Paren(Paren), tokens: TokenStream [Literal { lit: \"Hello world!\" }] } }), Semi)] } })] }")
+    }
+
     #[test]
     fn test_rust_instantiation() {
         let rs = Rust::new(&get_mock_source());
@@ -129,15 +137,18 @@ mod tests {
         assert_eq!(rs.size, 116);
         let ast = rs.to_ast();
         assert_eq!(ast.is_ok(), true);
-        let expected_astobj = "AST { src: File { shebang: None, attrs: [], items: [Use(ItemUse { attrs: [], vis: Inherited, use_token: Use, leading_colon: None, tree: Path(UsePath { ident: Ident(std), colon2_token: Colon2, tree: Path(UsePath { ident: Ident(path), colon2_token: Colon2, tree: Name(UseName { ident: Ident(PathBuf) }) }) }), semi_token: Semi }), Fn(ItemFn { attrs: [], vis: Public(VisPublic { pub_token: Pub }), sig: Signature { constness: None, asyncness: None, unsafety: None, abi: None, fn_token: Fn, ident: Ident(tester), generics: Generics { lt_token: None, params: [], gt_token: None, where_clause: None }, paren_token: Paren, inputs: [], variadic: None, output: Default }, block: Block { brace_token: Brace, stmts: [Semi(Macro(ExprMacro { attrs: [], mac: Macro { path: Path { leading_colon: None, segments: [PathSegment { ident: Ident(println), arguments: None }] }, bang_token: Bang, delimiter: Paren(Paren), tokens: TokenStream [Literal { lit: \"Hello world!\" }] } }), Semi)] } })] } }";
-        let expected_syn = "File { shebang: None, attrs: [], items: [Use(ItemUse { attrs: [], vis: Inherited, use_token: Use, leading_colon: None, tree: Path(UsePath { ident: Ident(std), colon2_token: Colon2, tree: Path(UsePath { ident: Ident(path), colon2_token: Colon2, tree: Name(UseName { ident: Ident(PathBuf) }) }) }), semi_token: Semi }), Fn(ItemFn { attrs: [], vis: Public(VisPublic { pub_token: Pub }), sig: Signature { constness: None, asyncness: None, unsafety: None, abi: None, fn_token: Fn, ident: Ident(tester), generics: Generics { lt_token: None, params: [], gt_token: None, where_clause: None }, paren_token: Paren, inputs: [], variadic: None, output: Default }, block: Block { brace_token: Brace, stmts: [Semi(Macro(ExprMacro { attrs: [], mac: Macro { path: Path { leading_colon: None, segments: [PathSegment { ident: Ident(println), arguments: None }] }, bang_token: Bang, delimiter: Paren(Paren), tokens: TokenStream [Literal { lit: \"Hello world!\" }] } }), Semi)] } })] }";
         let ast_test = ast.unwrap();
-        assert_eq!(format!("{:?}", ast_test), expected_astobj); // test debug format for AST struct
-        assert_eq!(format!("{}", ast_test), expected_syn); // test display format for syn::File string
+        assert_eq!(format!("{:?}", ast_test), get_astobj_string()); // test debug format for AST struct
+        assert_eq!(format!("{}", ast_test), get_syn_string()); // test display format for syn::File string
     }
 
-    // #[test]
-    // fn test_ast_instantiation() {
-    //     let ast = AST::new()
-    // }
+    #[test]
+    fn test_ast_instantiation() {
+        let synfile = parse_str::<SynFile>(&get_mock_source());
+        let ast = AST::new(synfile.unwrap());
+        assert_eq!(format!("{:?}", ast), get_astobj_string()); // test debug format for AST struct
+        assert_eq!(format!("{}", ast), get_syn_string()); // test display format for syn::File string
+    }
+
+    // TODO: add to Rust method tests
 }
