@@ -27,7 +27,7 @@ pub(crate) fn inline_crate_to_ast(filepath: &PathBuf) -> Result<SynFile, failure
                     sourceloc.path.display()
                 )
             }
-            _ => bail!("{:?}", error),
+            SynInlineError::__NonExhaustive => bail!("non-exhaustive SynInlineError"),
         },
     }
 }
