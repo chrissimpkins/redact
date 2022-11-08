@@ -6,7 +6,7 @@ edition = "2018"
 
 
 [dependencies]
-env_logger = "0.7.1"
+env_logger = "0.9.3"
 failure = "0.1.7"
 log = "0.4.8"
 proc-macro2 = "1.0.9"
